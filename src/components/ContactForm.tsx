@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const services = [
   "Pigeon Safety Nets",
@@ -22,21 +23,72 @@ const services = [
 const ContactForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phone: "",
+    email: "",
+    service: "",
+    address: "",
+    preferredDate: "",
+    preferredTime: "",
+    message: "",
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleServiceChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, service: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const { error } = await supabase.from("inquiries").insert({
+        full_name: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        service: formData.service,
+        address: formData.address,
+        preferred_date: formData.preferredDate,
+        preferred_time: formData.preferredTime,
+        message: formData.message || null,
+      });
 
-    toast({
-      title: "Inquiry Submitted!",
-      description: "We'll contact you within 20-30 minutes.",
-    });
+      if (error) throw error;
 
-    setIsSubmitting(false);
-    (e.target as HTMLFormElement).reset();
+      toast({
+        title: "Inquiry Submitted!",
+        description: "We'll contact you within 20-30 minutes.",
+      });
+
+      // Reset form
+      setFormData({
+        fullName: "",
+        phone: "",
+        email: "",
+        service: "",
+        address: "",
+        preferredDate: "",
+        preferredTime: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error("Error submitting inquiry:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Please try again or call us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,6 +112,9 @@ const ContactForm = () => {
               </label>
               <Input
                 type="text"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
                 placeholder="Your full name"
                 required
                 className="bg-background"
@@ -71,6 +126,9 @@ const ContactForm = () => {
               </label>
               <Input
                 type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
                 placeholder="Your phone number"
                 required
                 className="bg-background"
@@ -85,6 +143,9 @@ const ContactForm = () => {
               </label>
               <Input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="Your email address"
                 required
                 className="bg-background"
@@ -94,7 +155,7 @@ const ContactForm = () => {
               <label className="text-sm font-medium text-foreground">
                 Service Required *
               </label>
-              <Select required>
+              <Select value={formData.service} onValueChange={handleServiceChange} required>
                 <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Select a service" />
                 </SelectTrigger>
@@ -115,6 +176,9 @@ const ContactForm = () => {
             </label>
             <Input
               type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
               placeholder="Your address"
               required
               className="bg-background"
@@ -126,13 +190,27 @@ const ContactForm = () => {
               <label className="text-sm font-medium text-foreground">
                 Preferred Date *
               </label>
-              <Input type="date" required className="bg-background" />
+              <Input
+                type="date"
+                name="preferredDate"
+                value={formData.preferredDate}
+                onChange={handleInputChange}
+                required
+                className="bg-background"
+              />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Preferred Time *
               </label>
-              <Input type="time" required className="bg-background" />
+              <Input
+                type="time"
+                name="preferredTime"
+                value={formData.preferredTime}
+                onChange={handleInputChange}
+                required
+                className="bg-background"
+              />
             </div>
           </div>
 
@@ -141,6 +219,9 @@ const ContactForm = () => {
               Additional Message (Optional)
             </label>
             <Textarea
+              name="message"
+              value={formData.message}
+              onChange={handleInputChange}
               placeholder="Any additional details..."
               rows={4}
               className="bg-background"

@@ -1,25 +1,27 @@
 import { useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router-dom";
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "Pigeon Nets", href: "#services" },
-  { name: "Balcony Nets", href: "#services" },
-  { name: "Invisible Grills", href: "#services" },
-  { name: "Bird Spikes", href: "#services" },
-  { name: "Sports Nets", href: "#services" },
+  { name: "Home", href: "/" },
+  { name: "Pigeon Nets", href: "/pigeon-nets" },
+  { name: "Balcony Nets", href: "/balcony-nets" },
+  { name: "Invisible Grills", href: "/invisible-grills" },
+  { name: "Bird Spikes", href: "/bird-spikes" },
+  { name: "Sports Nets", href: "/sports-nets" },
 ];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container-custom">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <svg
                 viewBox="0 0 24 24"
@@ -32,18 +34,22 @@ const Navbar = () => {
             <span className="text-xl font-heading uppercase tracking-wide text-foreground">
               Safety Nets
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                to={link.href}
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === link.href
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -71,14 +77,18 @@ const Navbar = () => {
           <div className="lg:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                  className={`text-sm font-medium transition-colors ${
+                    location.pathname === link.href
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-primary"
+                  }`}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <Button variant="default" size="sm" className="gap-2 w-fit" asChild>
                 <a href="tel:7760181757">
